@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Proctor Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Proctor Dashboard</h1>
+    <div style="margin:12px 0;display:flex;gap:8px;align-items:center;justify-content:space-between">
+      <div>Live sessions: <strong id="liveCount">3</strong></div>
+      <div><input placeholder="Filter by exam or student" style="padding:8px;border-radius:8px;border:1px solid #ddd;width:320px"></div>
+    </div>
+
+    <div class="proctor-grid" id="grid">
+      <!-- Tiles will be populated by JS - mock data below -->
+      <div class="proctor-tile">
+        <video src="" autoplay muted playsinline></video>
+        <div class="meta">
+          <div><strong>student01</strong></div>
+          <div><button class="btn">View</button></div>
+        </div>
+      </div>
+      <div class="proctor-tile">
+        <video src="" autoplay muted playsinline></video>
+        <div class="meta">
+          <div><strong>student02</strong></div>
+          <div><button class="btn">View</button></div>
+        </div>
+      </div>
+      <div class="proctor-tile">
+        <video src="" autoplay muted playsinline></video>
+        <div class="meta">
+          <div><strong>student03</strong></div>
+          <div><button class="btn">View</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
