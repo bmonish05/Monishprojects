@@ -1,0 +1,101 @@
+/* =========================
+   Proctor System Stylesheet
+   - Organized, accessible, and responsive
+   - Covers candidate & proctor pages
+   ========================= */
+
+:root{
+  --bg-1: #f6d365;
+  --bg-2: #fda085;
+  --surface: #ffffff;
+  --muted: #6b7280;
+  --accent: #1f2937; /* dark slate */
+  --primary: #2563eb;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --warn: #f59e0b;
+  --radius: 10px;
+  --shadow-sm: 0 4px 10px rgba(2,6,23,0.06);
+  --shadow-md: 0 12px 30px rgba(2,6,23,0.08);
+  --gap: 12px;
+}
+
+/* Reset & base */
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;color:var(--accent);background:linear-gradient(135deg,var(--bg-1),var(--bg-2))}
+img,video{max-width:100%;display:block}
+.container{width:min(1100px,96%);margin:36px auto;padding:24px;background:rgba(255,255,255,0.95);border-radius:calc(var(--radius) + 2px);box-shadow:var(--shadow-md);}
+
+h1{font-size:1.5rem;margin:0 0 8px}
+p{margin:0 0 12px;color:var(--muted)}
+code{background:#f3f4f6;padding:2px 6px;border-radius:6px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer;font-weight:600}
+.btn:focus{outline:3px solid rgba(37,99,235,0.15)}
+.btn-sm{padding:6px 8px;font-size:.9rem}
+.btn-primary{background:var(--primary)}
+.btn-danger{background:var(--danger)}
+.btn-outline{background:transparent;border:1px solid #e5e7eb;color:var(--accent)}
+.flag{background:var(--warn);border-radius:6px;color:#fff;padding:6px 8px;font-weight:600}
+
+/* Utilities */
+.actions{display:flex;gap:var(--gap);flex-wrap:wrap}
+.row{display:flex;gap:12px;align-items:center}
+.small{font-size:.85rem;color:var(--muted)}
+.kbd{background:#f3f4f6;border-radius:6px;padding:2px 6px;border:1px solid #e6e6e6;font-family:ui-monospace, SFMono-Regular, Menlo}
+
+/* Exam area layout */
+.exam-layout{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+.exam-area{background:var(--surface);padding:18px;border-radius:var(--radius);box-shadow:var(--shadow-sm);text-align:left}
+.side-panel{background:var(--surface);padding:16px;border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+
+.video-preview{width:100%;height:260px;background:#000;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden}
+video#localVideo{width:100%;height:100%;object-fit:cover}
+
+.timer{font-weight:700;font-size:1.1rem;color:var(--primary)}
+.question{margin-top:14px}
+.question h3{margin:0 0 8px;font-size:1.05rem}
+.question p{margin:0;color:var(--muted)}
+
+.log{background:#fafafa;border:1px solid #ececec;padding:10px;height:200px;overflow:auto;border-radius:8px;font-family:ui-monospace, SFMono-Regular, Menlo;font-size:0.95rem;color:#111}
+
+/* Candidate controls */
+.controls{margin-top:14px;display:flex;gap:12px}
+.flag-btn{background:var(--warn);color:#fff;border-radius:8px;padding:6px 10px;font-weight:700}
+
+/* Proctor dashboard */
+.proctor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:12px}
+.proctor-tile{background:var(--surface);border-radius:10px;overflow:hidden;border:1px solid #edf2f7;box-shadow:var(--shadow-sm);display:flex;flex-direction:column}
+.proctor-tile video{width:100%;height:150px;object-fit:cover;background:#000}
+.proctor-tile .meta{padding:8px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f3f4f6}
+.proctor-tile .meta .name{font-weight:700}
+.proctor-tile .meta .status{font-size:.85rem;color:var(--muted)}
+
+.badge{display:inline-block;padding:6px 8px;border-radius:8px;background:#f1f5f9;color:var(--muted);font-weight:700}
+.alert{padding:8px;border-radius:6px;background:rgba(245,158,11,0.08);color:var(--warn);font-weight:700}
+
+/* Accessibility: focus and keyboard */
+:focus{outline: none}
+a:focus,button:focus{outline:3px solid rgba(37,99,235,0.15);outline-offset:2px}
+
+/* Responsive */
+@media (max-width:1000px){
+  .exam-layout{grid-template-columns:1fr}
+  .container{padding:16px}
+  .video-preview{height:200px}
+}
+
+@media (max-width:520px){
+  .container{margin:18px 10px}
+  h1{font-size:1.25rem}
+  .proctor-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+  .proctor-tile video{height:120px}
+}
+
+/* Small helpers for prototyping */
+.center{display:flex;align-items:center;justify-content:center}
+.hidden{display:none}
+
+/* End of stylesheet */
+
