@@ -4,43 +4,492 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Proctor Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f5f7fa;
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+    .top-bar {
+      margin:12px 0;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .top-bar input {
+      padding:8px;
+      border-radius:8px;
+      border:1px solid #ddd;
+      width:320px;
+    }
+    .proctor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      animation: fadeIn 1s ease-in;
+    }
+    .proctor-tile {
+      position: relative;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: tileIn 420ms cubic-bezier(.2,.9,.2,1) forwards;
+    }
+    .proctor-tile:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    }
+    .proctor-tile .tile-img, .proctor-tile video {
+      width: 100%;
+      height: 160px;
+      background: #000;
+      display: block;
+      object-fit: cover;
+      transition: transform 0.5s ease, filter 220ms ease;
+      /* hide face on front by default */
+      filter: grayscale(80%) blur(1px);
+    }
+    .proctor-tile.revealed .tile-img { filter: none; transform: scale(1.02); }
+    .proctor-tile:hover .tile-img { transform: scale(1.05) translateZ(0); }
+
+    .tile-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 12px;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,0.48) 100%);
+      opacity: 0;
+      transition: opacity 220ms ease;
+      pointer-events: none;
+    }
+
+    .lock-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.46);
+      color: #fff;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-weight:600;
+      font-size:12px;
+      display:flex;align-items:center;gap:6px
+    }
+    .proctor-tile.revealed .lock-badge { display: none; }
+    .proctor-tile:hover .tile-overlay {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .meta {
+      padding: 12px;
+      font-size: 14px;
+    }
+    .meta div {
+      margin: 4px 0;
+    }
+    .btn {
+      padding:6px 12px;
+      border:none;
+      border-radius:6px;
+      background:#3498db;
+      color:#fff;
+      cursor:pointer;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background:#2980b9;
+    }
+    .btn.secondary { background: transparent; color: #2c3e50; border: 1px solid #e6eef6; padding:6px 10px; }
+    .top-actions { display:flex; gap:8px; align-items:center; }
+    .profile-small { display:inline-grid; place-items:center; width:36px; height:36px; border-radius:50%; background:#fff; color:#2c3e50; font-weight:700; }
+    .proctor-modal-content { max-width:360px; padding:18px; }
+    .proctor-info-row { display:flex; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px dashed #eee }
+    .subject-badge { display:inline-block; background:#eef6ff; color:#2563eb; padding:4px 8px; border-radius:999px; font-size:12px; margin-right:6px; margin-top:4px; }
+    .profile-avatar { width:56px; height:56px; border-radius:50%; object-fit:cover; background:#fff; display:inline-block; }
+    .proctor-achievements { margin-top:8px; padding:8px; background:#fbfbfb; border-radius:8px; font-size:13px; color:#333 }
+    .proctor-email { font-size:13px; color:#2c3e50; margin-top:6px }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes tileIn {
+      from { opacity: 0; transform: translateY(12px) scale(.995); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(.96) translateY(-6px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    /* Modal styles */
+
+    .no-results {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 40px 12px;
+      color: #666;
+      font-size: 16px;
+      background: transparent;
+      border-radius: 8px;
+    }
+
+    #filterInput:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 6px 18px rgba(52,152,219,0.12);
+      transform: translateY(-2px);
+    }
+
+    .live-pulse {
+      display: inline-block;
+      animation: pulse 520ms ease;
+    }
+
+    .modal-content {
+      background:#fff;
+      border-radius:12px;
+      padding:20px;
+      max-width:600px;
+      width:90%;
+      animation: popIn 320ms cubic-bezier(.2,.9,.2,1);
+      transform-origin: center;
+    }
+    .modal {
+      display:none;
+      position:fixed;
+      z-index:1000;
+      left:0; top:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.6);
+      justify-content:center;
+      align-items:center;
+    }
+    .modal-content {
+      background:#fff;
+      border-radius:12px;
+      padding:20px;
+      max-width:600px;
+      width:90%;
+      animation: fadeIn 0.5s ease;
+    }
+    .modal-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .close {
+      cursor:pointer;
+      font-size:20px;
+      font-weight:bold;
+    }
+    .profile-pic {
+      width:120px;
+      height:120px;
+      border-radius:50%;
+      object-fit:cover;
+      margin-bottom:12px;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h1>Proctor Dashboard</h1>
-    <div style="margin:12px 0;display:flex;gap:8px;align-items:center;justify-content:space-between">
-      <div>Live sessions: <strong id="liveCount">3</strong></div>
-      <div><input placeholder="Filter by exam or student" style="padding:8px;border-radius:8px;border:1px solid #ddd;width:320px"></div>
+    <h1><strong>Proctor Dashboard</strong></h1>
+    <div class="top-bar">
+      <div>Live sessions: <strong id="liveCount">20</strong></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input id="filterInput" placeholder="Filter by exam, student, USN or event">
+        <div class="top-actions">
+          <button id="profileBtn" class="btn secondary" title="Proctor Profile">Profile</button>
+          <button id="logoutBtn" class="btn" title="Logout">Logout</button>
+        </div>
+      </div>
     </div>
 
     <div class="proctor-grid" id="grid">
-      <!-- Tiles will be populated by JS - mock data below -->
-      <div class="proctor-tile">
-        <video src="" autoplay muted playsinline></video>
-        <div class="meta">
-          <div><strong>student01</strong></div>
-          <div><button class="btn">View</button></div>
-        </div>
-      </div>
-      <div class="proctor-tile">
-        <video src="" autoplay muted playsinline></video>
-        <div class="meta">
-          <div><strong>student02</strong></div>
-          <div><button class="btn">View</button></div>
-        </div>
-      </div>
-      <div class="proctor-tile">
-        <video src="" autoplay muted playsinline></video>
-        <div class="meta">
-          <div><strong>student03</strong></div>
-          <div><button class="btn">View</button></div>
-        </div>
-      </div>
+      <!-- Student tiles will be injected here -->
     </div>
-
   </div>
 
-  <script src="js/main.js"></script>
+  <!-- Modal -->
+  <div class="modal" id="studentModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalName"></h2>
+        <span class="close" id="closeModal">&times;</span>
+      </div>
+      <img id="modalPic" class="profile-pic" src="" alt="Student Photo">
+      <div id="modalDetails"></div>
+    </div>
+  </div>
+
+  <!-- Proctor Profile Modal -->
+  <div class="modal" id="proctorModal">
+    <div class="modal-content proctor-modal-content">
+      <div class="modal-header">
+        <h3>Proctor Profile</h3>
+        <span class="close" id="closeProctorModal">&times;</span>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;margin:12px 0">
+        <img id="proctorPic" class="profile-avatar" src="" alt="Proctor Photo" onerror="this.style.display='none'">
+        <div>
+          <div id="proctorName" style="font-weight:700"></div>
+          <div style="font-size:12px;color:#666" id="proctorRole">Proctor</div>
+          <div id="proctorEmail" class="proctor-email"></div>
+        </div>
+      </div>
+      <div id="proctorDetails"></div>
+      <div id="proctorAchievements" class="proctor-achievements" style="display:none"></div>
+    </div>
+  </div>
+
+  <script>
+    // Require fresh login for each visit/refresh: allow access only when redirected from the login page within 15s
+    const _just = sessionStorage.getItem('proctorAuthJustLoggedIn');
+    if (!_just || (Date.now() - Number(_just) > 15000)) {
+      window.location.href = 'proctor_login.html';
+    } else {
+      // consume the flag so a reload requires login again
+      sessionStorage.removeItem('proctorAuthJustLoggedIn');
+    }
+
+    const names = [
+      "Aarav Sharma","Ishita Patel","Rohan Gupta","Sneha Reddy","Karan Mehta",
+      "Priya Nair","Aditya Rao","Neha Singh","Vikram Das","Ananya Joshi",
+      "Rahul Verma","Meera Iyer","Siddharth Kulkarni","Pooja Deshmukh","Arjun Menon",
+      "Divya Shetty","Nikhil Bhat","Kavya Mishra","Manish Jain","Shreya Kapoor"
+    ];
+
+    const students = Array.from({length: 20}, (_, i) => {
+      const age = 18 + (i % 4); // 18-21
+      const gender = (i % 2 === 0) ? 'male' : 'female';
+      const genderFolder = gender === 'male' ? 'men' : 'women';
+      const picIndex = (i * 7 + age) % 100; // deterministic portrait index
+      return {
+        name: names[i],
+        usn: `1KT21CS${String(i+1).padStart(3,'0')}`,
+        branch: "CSE",
+        attendance: `${80 + (i % 20)}%`,
+        father: `98765${1000+i}`,
+        mother: `98765${2000+i}`,
+        sem: (i % 8) + 1,
+        year: 2023,
+        age,
+        marks: [80+i%10, 85-i%5, 78+i%7, 90-i%3, 88+i%2],
+        feePaid: 50000,
+        feeDue: 10000 - (i*200),
+        fine: i%3===0 ? 500 : 0,
+        achievement: i%2===0 ? "Hackathon Winner" : "Paper Published",
+        performance: [70, 75, 80, 85, 90],
+        upcoming: i%2===0 ? "Tech Fest" : "Workshop",
+        assignments: `${i % 5} Pending`,
+        gender,
+        profilePic: `https://randomuser.me/api/portraits/${genderFolder}/${picIndex}.jpg`,
+        pic: `https://avatars.dicebear.com/api/initials/${encodeURIComponent(names[i])}.svg?size=120&backgroundType=neutral`,
+        tilePic: `https://avatars.dicebear.com/api/initials/${encodeURIComponent(names[i])}.svg?size=480&backgroundType=gradient`
+      };
+    });
+
+    const grid = document.getElementById("grid");
+    const filterInput = document.getElementById('filterInput');
+
+    function renderGrid(list) {
+      const countEl = document.getElementById('liveCount');
+      // live count update with pulse
+      countEl.textContent = list.length;
+      countEl.classList.add('live-pulse');
+      countEl.addEventListener('animationend', () => countEl.classList.remove('live-pulse'), {once:true});
+
+      if (list.length === 0) {
+        grid.innerHTML = `<div class="no-results">No students match your search</div>`;
+        return;
+      }
+
+      grid.innerHTML = list.map((s, idx) => {
+        const originalIndex = students.findIndex(u => u.usn === s.usn);
+        return `
+          <div class="proctor-tile" data-usn="${s.usn}" style="animation-delay: ${idx * 60}ms;">
+            <div class="lock-badge">🔒 Private</div>
+            <img class="tile-img" src="${s.tilePic}" alt="${s.name}" title="${s.name} — ${s.age} yrs">
+            <div class="tile-overlay"><div class="age-badge">${s.age} yrs</div><button class="btn" onclick="openModal(${originalIndex})">View</button></div>
+            <div class="meta">
+              <div><strong>${s.name}</strong></div>
+              <div>USN: ${s.usn}</div>
+              <div>Branch: ${s.branch}</div>
+              <div>Attendance: ${s.attendance}</div>
+              <div>Age: ${s.age}</div>
+            </div>
+          </div>
+        `; 
+      }).join('');
+    }
+
+    // initial render
+    renderGrid(students);
+
+    // filter input listener (case-insensitive, matches name, usn, branch, upcoming, assignments)
+    filterInput.addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      if (!q) {
+        renderGrid(students);
+        return;
+      }
+      const filtered = students.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        s.usn.toLowerCase().includes(q) ||
+        s.branch.toLowerCase().includes(q) ||
+        s.upcoming.toLowerCase().includes(q) ||
+        (s.assignments && s.assignments.toLowerCase().includes(q))
+      );
+      renderGrid(filtered);
+    });
+
+    const modal = document.getElementById("studentModal");
+    const closeModal = document.getElementById("closeModal");
+    const modalName = document.getElementById("modalName");
+    const modalPic = document.getElementById("modalPic");
+    const modalDetails = document.getElementById("modalDetails");
+
+    // Proctor modal elements
+    const proctorModal = document.getElementById('proctorModal');
+    const closeProctorModal = document.getElementById('closeProctorModal');
+    const profileBtn = document.getElementById('profileBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const proctorAvatar = document.getElementById('proctorAvatar');
+    const proctorName = document.getElementById('proctorName');
+    const proctorDetails = document.getElementById('proctorDetails');
+
+    // Sample proctor profiles (replace with real data as needed)
+    const proctorProfiles = {
+      proctor: {
+        fullName: 'Dr. Priya Singh',
+        designation: 'Associate Professor',
+        experience: '8 years',
+        subjects: ['Operating Systems','Computer Networks'],
+        email: 'priya.singh@college.edu',
+        achievements: ['Best Teacher Award 2022', '5 Publications in AI'],
+        // female Indian portrait (deterministic)
+        profilePic: 'https://randomuser.me/api/portraits/women/45.jpg'
+      },
+      guest: {
+        fullName: 'Guest Proctor',
+        designation: 'Visiting Proctor',
+        experience: '—',
+        subjects: ['—'],
+        email: '',
+        achievements: [],
+        profilePic: ''
+      }
+    };
+
+    function getInitials(name) {
+      return (name || '').split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+    }
+
+    // Show proctor profile (with designation, experience, and subjects)
+    profileBtn.addEventListener('click', () => {
+      const id = sessionStorage.getItem('proctorId') || 'proctor';
+      const profile = proctorProfiles[id] || proctorProfiles['proctor'];
+      proctorName.textContent = profile.fullName;
+      // set role/designation field
+      const roleEl = document.getElementById('proctorRole');
+      if (roleEl) roleEl.textContent = profile.designation;
+      const loginTs = sessionStorage.getItem('proctorLoginTime');
+      const loginText = loginTs ? new Date(Number(loginTs)).toLocaleString() : '—';
+      const subjectsHtml = profile.subjects.map(s => `<span class="subject-badge">${s}</span>`).join(' ');
+      proctorDetails.innerHTML = `
+        <div class="proctor-info-row"><div>ID</div><div>${id}</div></div>
+        <div class="proctor-info-row"><div>Designation</div><div>${profile.designation}</div></div>
+        <div class="proctor-info-row"><div>Experience</div><div>${profile.experience}</div></div>
+        <div class="proctor-info-row"><div>Subjects</div><div>${subjectsHtml}</div></div>
+        <div class="proctor-info-row"><div>Last login</div><div>${loginText}</div></div>
+      `;
+      // email & achievements
+      const proctorEmailEl = document.getElementById('proctorEmail');
+      proctorEmailEl.textContent = profile.email || '';
+      const achEl = document.getElementById('proctorAchievements');
+      if (profile.achievements && profile.achievements.length) {
+        achEl.style.display = 'block';
+        achEl.innerHTML = '<strong>Achievements</strong><ul style="margin:6px 0 0 16px">' + profile.achievements.map(a => `<li>${a}</li>`).join('') + '</ul>';
+      } else { achEl.style.display = 'none'; }
+
+      // profile pic (with fallback to initials)
+      const picEl = document.getElementById('proctorPic');
+      if (profile.profilePic) {
+        picEl.style.display = 'inline-block';
+        picEl.src = profile.profilePic;
+        picEl.onerror = () => { picEl.style.display = 'none'; };
+      } else {
+        picEl.style.display = 'none';
+      }
+
+      // initials fallback into avatar-small (for accessibility when image hidden)
+      const avatarSmall = document.getElementById('proctorAvatar');
+      if (avatarSmall) avatarSmall.textContent = getInitials(profile.fullName);
+
+      proctorModal.style.display = 'flex';
+    });
+
+    closeProctorModal.onclick = () => { proctorModal.style.display = 'none'; };
+
+    // Logout handler
+    logoutBtn.addEventListener('click', () => {
+      sessionStorage.removeItem('proctorAuthJustLoggedIn');
+      sessionStorage.removeItem('proctorId');
+      sessionStorage.removeItem('proctorLoginTime');
+      window.location.href = 'proctor_login.html';
+    });
+
+    function openModal(index) {
+      const s = students[index];
+      modalName.textContent = s.name;
+      // prefer realistic gendered portrait; fallback to initials avatar when portrait fails
+      modalPic.src = s.profilePic || s.pic;
+      modalPic.onerror = () => { modalPic.onerror = null; modalPic.src = s.pic || s.tilePic; };
+      modalDetails.innerHTML = `
+        <p><strong>USN:</strong> ${s.usn}</p>
+        <p><strong>Branch:</strong> ${s.branch}</p>
+        <p><strong>Attendance:</strong> ${s.attendance}</p>
+        <p><strong>Father:</strong> ${s.father} | <strong>Mother:</strong> ${s.mother}</p>
+        <p><strong>Semester:</strong> ${s.sem} | <strong>Year:</strong> ${s.year}</p>
+        <p><strong>Marks:</strong> ${s.marks.join(", ")}</p>
+        <p><strong>Fee Paid:</strong> ₹${s.feePaid} | <strong>Due:</strong> ₹${s.feeDue} | <strong>Fine:</strong> ₹${s.fine}</p>
+        <p><strong>Achievements:</strong> ${s.achievement}</p>
+        <p><strong>Performance Trend:</strong> ${s.performance.join(" → ")}</p>
+        <p><strong>Upcoming Events:</strong> ${s.upcoming}</p>
+        <p><strong>Assignments:</strong> ${s.assignments}</p>
+        <p><strong>Age:</strong> ${s.age} yrs</p>
+      `;
+      modal.style.display = "flex";
+    }
+
+    closeModal.onclick = () => modal.style.display = "none";
+    window.onclick = (e) => { if(e.target === modal) modal.style.display = "none"; };
+  </script>
 </body>
 </html>

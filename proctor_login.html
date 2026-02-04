@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Proctor Login</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#06b6d4;--accent-2:#7c3aed;--muted:#9aa7b2}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#071024 0%, #071228 50%, #08152b 100%);color:#e6eef6}
+
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}
+    .card{width:420px;max-width:96%;background:linear-gradient(180deg,rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:16px;padding:28px;box-shadow:0 12px 50px rgba(2,6,23,0.6);position:relative;overflow:hidden;transform:translateY(18px);opacity:0;animation:cardIn .6s cubic-bezier(.2,.9,.2,1) forwards}
+
+    .brand{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;font-weight:800;color:#042a2f;font-size:20px}
+    h2{margin:0;font-size:20px}
+    p.lead{margin:6px 0 18px 0;color:var(--muted);font-size:13px}
+
+    .field{margin-bottom:12px}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:8px}
+    input[type="text"], input[type="password"]{width:100%;padding:12px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:inherit;outline:none;transition:box-shadow .16s, transform .08s}
+    input[type="text"]:focus, input[type="password"]:focus{box-shadow:0 10px 28px rgba(6,182,212,0.12);transform:translateY(-2px);border-color:rgba(6,182,212,0.28)}
+
+    .actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
+    .btn{background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;color:#02131b;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(7,18,28,0.4);transition:transform .12s}
+    .btn:hover{transform:translateY(-3px)}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.05);color:var(--muted);padding:9px 12px}
+
+    .row{display:flex;gap:8px;align-items:center}
+    .small{font-size:12px;color:var(--muted)}
+
+    .error{background:#3e1018;color:#ffd6d6;padding:10px;border-radius:8px;margin-top:10px;display:none}
+
+    .show-pw{font-size:12px;color:var(--muted);cursor:pointer;border-radius:8px;padding:6px 8px;border:1px solid transparent}
+
+    .hint{margin-top:12px;font-size:12px;color:#9fb1bb}
+
+    /* animated lock */
+    .lock{position:absolute;right:-80px;top:-80px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle at 30% 30%, rgba(124,58,237,0.12), transparent 30%), radial-gradient(circle at 70% 70%, rgba(6,182,212,0.08), transparent 30%);transform:rotate(20deg);}
+
+    @keyframes cardIn{from{opacity:0;transform:translateY(28px) scale(.998)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+    /* shake for wrong creds */
+    @keyframes shake{10%,90%{transform:translateX(-4px)}20%,80%{transform:translateX(6px)}30%,50%,70%{transform:translateX(-6px)}40%,60%{transform:translateX(6px)}}
+
+    .shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
+
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+
+    @media (prefers-reduced-motion:reduce){.card{animation:none} .shake{animation:none}}
+
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="card" id="card">
+      <div class="lock" aria-hidden="true"></div>
+      <div class="brand">
+        <div class="logo">PD</div>
+        <div>
+          <div style="font-weight:800;color:#e6faff;">Proctor Dashboard</div>
+          <div style="font-size:12px;color:var(--muted)">Secure proctor sign-in</div>
+        </div>
+      </div>
+
+      <h2>Welcome back</h2>
+      <p class="lead">Sign in with your Proctor ID to manage sessions.</p>
+
+      <div id="error" class="error" role="alert"></div>
+
+      <div class="field">
+        <label for="pid">Proctor ID</label>
+        <input id="pid" name="" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Proctor ID (e.g. proctor)">
+      </div>
+
+      <div class="field">
+        <label for="pw">Password</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="pw" name="" type="password" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Password">
+          <button id="togglePw" class="show-pw" type="button" aria-pressed="false">Show</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="loginBtn" class="btn">Sign in</button>
+        <div style="text-align:right">
+          <button id="guestBtn" class="btn secondary">Guest</button>
+        </div>
+      </div>
+
+      <div class="hint">Tip: Use the demo credentials above to preview the dashboard.</div>
+      <footer>Need help? Contact your administrator.</footer>
+    </div>
+  </main>
+
+  <script>
+    // Always show login on page load (we require fresh auth on every refresh)
+
+    const creds = { proctor: 'password123' };
+    const pid = document.getElementById('pid');
+    const pw = document.getElementById('pw');
+    const loginBtn = document.getElementById('loginBtn');
+    const errorEl = document.getElementById('error');
+    const togglePw = document.getElementById('togglePw');
+    const guestBtn = document.getElementById('guestBtn');
+    const card = document.getElementById('card');
+
+    // Prevent browser-stored credentials from being suggested:
+    // 1) clear values on load, 2) set non-standard autocomplete, 3) give ephemeral name attributes,
+    // 4) clear again shortly to defeat late autofill, 5) clear on first focus.
+    pid.value = '';
+    pw.value = '';
+    pid.setAttribute('autocomplete','off');
+    pw.setAttribute('autocomplete','new-password');
+    pid.setAttribute('autocapitalize','off'); pid.setAttribute('autocorrect','off'); pid.setAttribute('spellcheck','false');
+    pw.setAttribute('autocapitalize','off'); pw.setAttribute('autocorrect','off'); pw.setAttribute('spellcheck','false');
+    // ephemeral names reduce the chance browsers match stored credentials
+    pid.name = 'u_' + Math.random().toString(36).slice(2,10);
+    pw.name = 'p_' + Math.random().toString(36).slice(2,10);
+    // browsers sometimes autofill a little later; clear again shortly
+    setTimeout(()=>{ pid.value = ''; pw.value = ''; }, 180);
+
+    [pid,pw].forEach(el => {
+      el.addEventListener('focus', ()=>{ if (!el.dataset.cleared) { el.value=''; el.dataset.cleared = 'true'; } });
+    });
+
+    function showError(msg){ errorEl.textContent = msg; errorEl.style.display = 'block'; card.classList.add('shake'); setTimeout(()=>card.classList.remove('shake'),520); }
+    function clearError(){ errorEl.style.display = 'none'; errorEl.textContent = ''; }
+
+    togglePw.addEventListener('click', ()=>{
+      if (pw.type === 'password') { pw.type = 'text'; togglePw.textContent = 'Hide'; togglePw.setAttribute('aria-pressed','true'); }
+      else { pw.type = 'password'; togglePw.textContent = 'Show'; togglePw.setAttribute('aria-pressed','false'); }
+    });
+
+    function setLoading(on){ if(on){ loginBtn.textContent = 'Signing in…'; loginBtn.disabled = true; } else { loginBtn.textContent = 'Sign in'; loginBtn.disabled = false; } }
+
+    loginBtn.addEventListener('click', ()=>{
+      clearError();
+      const idv = pid.value.trim();
+      const pwv = pw.value;
+      if (!idv || !pwv) { showError('Enter Proctor ID and password'); return; }
+      setLoading(true);
+      setTimeout(()=>{
+        setLoading(false);
+        if (creds[idv] && creds[idv] === pwv) {
+          // set a short-lived session flag and show success animation
+          sessionStorage.setItem('proctorAuthJustLoggedIn', Date.now().toString());
+          sessionStorage.setItem('proctorId', idv);
+          sessionStorage.setItem('proctorLoginTime', Date.now().toString());
+          const success = document.createElement('div');
+          success.innerHTML = '<div style="display:flex;align-items:center;gap:10px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#0f5132"/><path d="M7.5 12.5l2.5 2.5 6-7" stroke="#8ef2c2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><strong>Welcome!</strong></div>';
+          success.style.cssText = 'position:absolute;left:50%;top:12px;transform:translateX(-50%);background:linear-gradient(90deg,#072a1a,#0f5132);color:#eafff1;padding:10px 14px;border-radius:10px;box-shadow:0 8px 24px rgba(3,10,8,0.36);opacity:0;animation:popIn .36s forwards';
+          card.appendChild(success);
+          card.style.transform = 'scale(1.02)';
+          setTimeout(()=>{ location.href = 'proctor.html'; }, 700);
+        } else {
+          showError('Invalid credentials. Use the demo credentials for the preview.');
+        }
+      }, 900);
+    });
+
+    guestBtn.addEventListener('click', ()=>{
+      sessionStorage.setItem('proctorAuthJustLoggedIn', Date.now().toString());
+      sessionStorage.setItem('proctorId', 'guest');
+      sessionStorage.setItem('proctorLoginTime', Date.now().toString());
+      location.href = 'proctor.html';
+    });
+
+    [pid,pw].forEach(el => el.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') loginBtn.click(); }));
+  </script>
+</body>
+</html>
