@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Student Profile</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+
+    :root {
+      --accent: #6C63FF;
+      --accent-2: #4FE1C1;
+      --bg: #07102a;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(120deg, #07102a 0%, #041025 100%);
+      color: #e6eef8;
+      padding: 28px;
+      overflow-y: auto;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: -20% -20% auto -20%;
+      height: 60vh;
+      background:
+        radial-gradient(circle at 10% 20%, rgba(108,99,255,0.14), transparent 8%),
+        radial-gradient(circle at 90% 80%, rgba(79,225,193,0.06), transparent 6%);
+      filter: blur(36px);
+      opacity: 0.9;
+      animation: glowShift 12s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 24px auto;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      backdrop-filter: blur(8px) saturate(120%);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(2,6,23,0.55);
+      animation: fadeUp .6s ease both;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .info {
+      margin-top: 12px;
+    }
+
+    .label {
+      font-size: 12px;
+      color: rgba(230,238,248,0.65);
+      margin-top: 8px;
+    }
+
+    .value {
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .mini-pic {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.02);
+      border: 2px dashed rgba(255,255,255,0.06);
+      flex: 0 0 48px;
+    }
+
+    .mini-pic.has-image {
+      border: none;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .edit-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    label {
+      font-size: 13px;
+      color: rgba(230,238,248,0.8);
+    }
+
+    input[type=text],
+    input[type=tel],
+    textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      color: #e6eef8;
+      min-height: 64px;
+      resize: vertical;
+    }
+
+    .subjects-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    .subjects-table th,
+    .subjects-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px dashed rgba(255,255,255,0.03);
+    }
+
+    .subjects-table tbody tr {
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+
+    .subjects-table tbody tr:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    }
+
+    .percent {
+      font-weight: 700;
+      min-width: 120px;
+    }
+
+    .progress {
+      height: 8px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 900ms cubic-bezier(.2,.9,.2,1);
+    }
+
+    .pct-text {
+      font-size: 12px;
+      color: rgba(230,238,248,0.8);
+    }
+
+    .row-expand {
+      background: rgba(255,255,255,0.02);
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .row-expand h4 {
+      margin: 0 0 8px 0;
+      color: #fff;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .btn {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: #051018;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .12s;
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(.995);
+    }
+
+    .btn.ghost {
+      background: transparent;
+      color: #e6eef8;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes glowShift {
+      from { transform: translateY(-8px) rotate(-6deg); }
+      to { transform: translateY(8px) rotate(6deg); }
+    }
+
+    @media (max-width: 880px) {
+      .container { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Student Profile</h1>
+    <button id="logoutBtn" class="btn ghost">Logout</button>
+  </header>
+
+  <div class="container">
+    <aside class="card">
+      <div style="display:flex;gap:12px;align-items:center;justify-content:space-between">
+        <div>
+          <div class="info">
+            <div class="label">Name</div>
+            <div id="nameVal" class="value">-</div>
+
+            <div class="label">USN</div>
+            <div id="usnVal" class="value">-</div>
+
+            <div class="label">G Suite ID</div>
+            <div id="gsuiteVal" class="value">-</div>
+          </div>
+        </div>
+        <div id="miniPic" class="mini-pic"></div>
+      </div>
+
+      <div class="edit-fields">
+        <label>Phone</label>
+        <input id="phoneInput" type="tel">
+
+        <label>Semester & Branch</label>
+        <input id="semBranchInput" type="text">
+
+        <label>Permanent Address</label>
+        <textarea id="permAddr" rows="4"></textarea>
+
+        <label>Communication Address</label>
+        <textarea id="commAddr" rows="4"></textarea>
+      </div>
+    </aside>
+
+    <main class="card">
+      <h3>Subjects & Attendance</h3>
+      <table class="subjects-table" id="subjectsTable">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Subject</th>
+            <th>Attended</th>
+            <th>Total</th>
+            <th>Attendance %</th>
+            <th>Marks</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="subjectDetail" style="display:none;margin-top:12px"></div>
+
+      <h3 style="margin-top:18px">Marks Summary</h3>
+      <table class="subjects-table" id="marksTable">
+        <thead>
+          <tr><th>Code</th><th>Subject</th><th>Marks</th><th>Attendance</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+    </main>
+  </div>
+
+<script>
+  function percent(a, b) {
+    return b ? Math.round((a / b) * 100) : 0;
+  }
+
+    function showSubjectDetails(s) {
+      const detail = document.getElementById('subjectDetail');
+      if (!detail || !s) return;
+      const absent = s.total - s.attended;
+      const pct = percent(s.attended, s.total);
+      let html = `<div class="row-expand"><h4>${s.code} — ${s.name}</h4>
+        <div class="label">Present</div><div class="value">${s.attended}</div>
+        <div class="label">Absent</div><div class="value">${absent}</div>
+        <div class="label">Total Classes</div><div class="value">${s.total}</div>
+        <div class="label">Attendance %</div><div class="value">${pct}%</div>
+        <div class="label">Marks</div><div class="value">${s.marks}/${s.maxMarks}</div>
+        <div style="margin-top:10px"><button id="closeDetail" class="btn ghost">Close</button></div>
+      `;
+
+      if (s.attendanceRecords && s.attendanceRecords.length) {
+        html += `<div style="margin-top:10px"><div class="label">Recent classes</div>
+         <table class="subjects-table"><thead><tr><th>Date</th><th>Status</th></tr></thead><tbody>`;
+        s.attendanceRecords.forEach(r => {
+          html += `<tr><td>${r.date}</td><td>${r.status === 'P' ? 'Present' : 'Absent'}</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+      }
+
+      html += `</div>`;
+      detail.innerHTML = html;
+      detail.style.display = 'block';
+      const btn = document.getElementById('closeDetail');
+      if (btn) btn.onclick = () => { detail.style.display = 'none'; };
+    }
+    function loadProfile() {
+      let raw = sessionStorage.getItem('studentData');
+      if (!raw) {
+        raw = JSON.stringify({
+        username: 'Student One',
+        usn: '1RV20CS001',
+        gsuite: 'student.one@school.edu',
+        phone: '9876543210',
+        sem: '6',
+        branch: 'CSE',
+        addresses: {
+          permanent: '123 Main Street, Flat 12, Whitefield, Bengaluru, Karnataka 560066',
+          communication: '456 College Road, Near City Mall, Jayanagar, Bengaluru, Karnataka 560041'
+        },
+        subjects: [
+          { code: 'CS301', name: 'Algorithms', attended: 36, total: 48, marks: 82, maxMarks: 100,
+            attendanceRecords: [
+              {date: '2026-01-20', status: 'P'}, {date: '2026-01-18', status: 'A'}, {date: '2026-01-15', status: 'P'},
+              {date: '2026-01-13', status: 'P'}, {date: '2026-01-10', status: 'P'}
+            ]
+          },
+          { code: 'CS302', name: 'Operating Systems', attended: 40, total: 48, marks: 75, maxMarks: 100,
+            attendanceRecords: [
+              {date: '2026-01-21', status: 'P'}, {date: '2026-01-19', status: 'P'}, {date: '2026-01-16', status: 'A'},
+              {date: '2026-01-12', status: 'P'}, {date: '2026-01-09', status: 'P'}
+            ]
+          },
+          { code: 'CS303', name: 'DBMS', attended: 44, total: 48, marks: 88, maxMarks: 100,
+            attendanceRecords: [
+              {date: '2026-01-22', status: 'P'}, {date: '2026-01-20', status: 'P'}, {date: '2026-01-17', status: 'P'},
+              {date: '2026-01-14', status: 'P'}, {date: '2026-01-11', status: 'A'}
+            ]
+          }
+        ]
+      });
+      sessionStorage.setItem('studentData', raw);
+    }
+
+    const data = JSON.parse(raw);
+
+    document.getElementById('nameVal').textContent = data.username;
+    document.getElementById('usnVal').textContent = data.usn;
+    document.getElementById('gsuiteVal').textContent = data.gsuite;
+    document.getElementById('phoneInput').value = data.phone;
+    document.getElementById('semBranchInput').value = `${data.sem} / ${data.branch}`;
+
+    document.getElementById('permAddr').value = data.addresses.permanent;
+    document.getElementById('commAddr').value = data.addresses.communication;
+
+    const tbody = document.querySelector('#subjectsTable tbody');
+    tbody.innerHTML = '';
+
+    data.subjects.forEach((s, i) => {
+      const pct = percent(s.attended, s.total);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${s.code}</td>
+        <td>${s.name}</td>
+        <td>${s.attended}</td>
+        <td>${s.total}</td>
+        <td class="percent">
+          <div class="progress"><div class="fill" style="width:${pct}%"></div></div>
+          <div class="pct-text">${pct}%</div>
+        </td>
+        <td>${s.marks}/${s.maxMarks}</td>
+        <td><button class="btn ghost details-btn" data-index="${i}">Details</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Attach detail button handlers
+    document.querySelectorAll('.details-btn').forEach(btn => {
+      btn.onclick = () => {
+        const idx = Number(btn.getAttribute('data-index'));
+        showSubjectDetails(data.subjects[idx]);
+      };
+    });
+
+    const marksTbody = document.querySelector('#marksTable tbody');
+    marksTbody.innerHTML = '';
+
+    data.subjects.forEach(s => {
+      const pct = percent(s.attended, s.total);
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${s.code}</td>
+        <td>${s.name}</td>
+        <td>${s.marks}/${s.maxMarks}</td>
+        <td>${s.attended}/${s.total} (${pct}%)</td>
+      `;
+      marksTbody.appendChild(row);
+    });
+  }
+
+  document.getElementById('logoutBtn').onclick = () => {
+    sessionStorage.clear();
+    location.href = 'student_login.html';
+  };
+
+  loadProfile();
+</script>
+
+</body>
+</html>
+
