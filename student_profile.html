@@ -343,8 +343,8 @@
         sem: '6',
         branch: 'CSE',
         addresses: {
-          permanent: '123 Main Street, Flat 12, Whitefield, Bengaluru, Karnataka 560066',
-          communication: '456 College Road, Near City Mall, Jayanagar, Bengaluru, Karnataka 560041'
+          permanent: '123 Main Street Road 5th cross, Flat 12, Whitefield, Bengaluru, Karnataka 560066',
+          communication: '456 College Road 3rd cross, Near City Mall, Jayanagar, Bengaluru, Karnataka 560041'
         },
         subjects: [
           { code: 'CS301', name: 'Algorithms', attended: 36, total: 48, marks: 82, maxMarks: 100,
@@ -402,7 +402,7 @@
       tbody.appendChild(tr);
     });
 
-    // Attach detail button handlers
+   
     document.querySelectorAll('.details-btn').forEach(btn => {
       btn.onclick = () => {
         const idx = Number(btn.getAttribute('data-index'));

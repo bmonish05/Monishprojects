@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    font-family: Arial, sans-serif;
+  }
+
+  .login-box {
+    background: white;
+    padding: 30px;
+    width: 300px;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    animation: fadeUp 0.7s ease;
+    text-align: center;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  h2 {
+    margin-bottom: 20px;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+  }
+
+  button {
+    width: 100%;
+    padding: 10px;
+    background: #4facfe;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  button:hover {
+    background: #00c6ff;
+    transform: scale(1.05);
+  }
+
+  .success {
+    display: none;
+    margin-top: 15px;
+    color: green;
+    font-weight: bold;
+    animation: pop 0.4s ease;
+  }
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="login-box">
+  <h2>Login</h2>
+  <input type="text" id="loginId" placeholder="Login ID">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+
+  <div class="success" id="successMsg">
+    ✅ Login Successful
+  </div>
+</div>
+
+<script>
+  function login() {
+    // Simple demo check (no real authentication)
+    document.getElementById("successMsg").style.display = "block";
+  }
+</script>
+
+</body>
+</html>

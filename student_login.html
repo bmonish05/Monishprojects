@@ -328,13 +328,13 @@ textarea {
           return;
         }
 
-        // Demo credentials check (replace with server-side validation in production)
-        if(id === 'monish' && pw === '123456789'){
+        
+        if(id === 'monish' && pw === '123!@#'){
           msg.textContent = 'Login successful! Redirecting...';
           card.classList.remove('error');
           card.classList.add('success');
           setTimeout(()=>{
-            // Prepare demo profile data for 'monish' and store in sessionStorage
+            
             const studentData = {
               username: 'monish',
               usn: '1RV17CS001',
@@ -358,7 +358,7 @@ textarea {
 
             sessionStorage.setItem('studentData', JSON.stringify(studentData));
 
-            // Clear UI and redirect to profile page
+           
             msg.textContent = '';
             card.classList.remove('success');
             window.location.href = 'student_profile.html';
@@ -373,6 +373,6 @@ textarea {
     });
   </script>
 
-  <!-- Profile moved to its own page: student_profile.html -->
+  
 </body>
 </html>
